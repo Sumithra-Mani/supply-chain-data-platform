@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test-and-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Unit and end-to-end tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Full pipeline run (fails if any data quality check fails)
+        run: python run_pipeline.py
+
+      - name: Upload KPI outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: kpi-reports
+          path: output/
